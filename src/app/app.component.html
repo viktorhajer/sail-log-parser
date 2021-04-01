@@ -1,0 +1,71 @@
+<div class="main">
+  <div class="menu">
+    <input type="file" (change)="openBackendLog($event)" [hidden]="true" #backendFileField>
+    <input type="file" (change)="openProxyLog($event)" [hidden]="true" #proxyFileField>
+    <a class="button" id="backend-button" (click)="backendFileField.click()">Add Backend Log</a>
+    <a class="button" id="proxy-button" (click)="proxyFileField.click()">Add Proxy Log</a>
+    <a class="button" id="clear-log-button" (click)="clearLogs()">Clear Log</a>
+  </div>
+  <div class="filter-form">
+    <div class="form-data">
+      <label>Filter by versionID</label>
+      <select id="version-ids-select" (change)="changedFilter()"
+              [(ngModel)]="selectedVersionId">
+        <option value=""></option>
+        <option *ngFor="let id of versionIds" [value]="id">{{ id }}</option>
+      </select>
+      <label>Searching</label>
+      <input type="text" id="search-field" [(ngModel)]="searchValue" (keyup)="changedFilter($event)"
+             placeholder="Type to quick search...">
+    </div>
+    <div class="form-data type-filter">
+      <label>Type</label>
+      <ul>
+        <li *ngFor="let t of selectedType">
+          <input type="checkbox" (change)="changedFilter()" [(ngModel)]="t.checked"> {{ t.label }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="form-data date-filter">
+      <label>Start Date ({{ formatDate(selectedStartDate) }})</label>
+      <input type="range" [(ngModel)]="selectedStartDate"
+             [min]="minDate" [max]="selectedEndDate" (change)="changedFilter()">
+      <label>End Date ({{ formatDate(selectedEndDate) }})</label>
+      <input type="range" [(ngModel)]="selectedEndDate"
+             [min]="selectedStartDate" [max]="maxDate" (change)="changedFilter()">
+    </div>
+
+    <div class="form-data actions">
+      <button id="clear-button" (click)="clearFilters()">Clear Filter</button>
+    </div>
+  </div>
+
+  <div class="statistics-container">
+    Number of logs: {{ filteredLogs.length }} (total: {{ logs.length }})
+  </div>
+
+  <table id="output-log" cellpadding="0" cellspacing="0">
+    <tr>
+      <th style="width: 40px">#</th>
+      <th style="width: 120px">_time</th>
+      <th style="width: 80px">type</th>
+      <th>message</th>
+    </tr>
+    <ng-container *ngFor="let l of filteredLogs; let i = index">
+      <tr class="outlog" (click)="toggleInfo(i)"
+          [class.error]="l.type === 'E'" [class.warning]="l.type === 'W'"
+          [class.proxy]="l.src === 'c'">
+        <td>{{ i }}</td>
+        <td>{{ l.time | date:'M/d/yyyy, HH:mm:ss' }}</td>
+        <td>{{ getType(l.type) }}</td>
+        <td>{{ l.message }}</td>
+      </tr>
+      <tr class="outInfo outInfo_{{i}} hidden">
+        <td></td>
+        <td colspan="3">{{ l.raw }}</td>
+      </tr>
+    </ng-container>
+  </table>
+</div>
+<router-outlet></router-outlet>
